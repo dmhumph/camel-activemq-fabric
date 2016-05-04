@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+<!-- 
+	<bean class="org.apache.activemq.camel.component.ActiveMQComponent" id="activemq">
+  		<property name="brokerURL" value="tcp://Dustins-MBP:53783"/>
+  		<property name="userName" value="admin"/>
+  		<property name="password" value="admin"/>
+ 	</bean>
+ -->
+ 	<bean id="pooledConnectionFactory" 
+   		class="org.apache.activemq.pool.PooledConnectionFactory" init-method="start" destroy-method="stop">
+   		<property name="maxConnections" value="8" />
+   		<property name="connectionFactory" ref="jmsConnectionFactory" />
+	</bean>
+ 	
+ 	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent" >
+        <property name="connectionFactory" ref="pooledConnectionFactory"/>
+    </bean>
+ 	
+ 	<bean id="jmsConnectionFactory"
+          class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL" value="discovery:(fabric:default)"/>
+        <property name="userName" value="admin"/>
+  		<property name="password" value="admin"/>
+    </bean>
+
+  <camelContext trace="false" xmlns="http://camel.apache.org/schema/spring">
+  <route>
+    <from uri="activemq:queue:demo"/>
+    <log message="Listener message received =&gt; ${body}" loggingLevel="INFO" logName="listenLog1"/>
+  </route>
+</camelContext>
+
+</beans>
